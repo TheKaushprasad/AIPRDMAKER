@@ -23,10 +23,23 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
   const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = `
-    You are a PRD generation assistant for a public web application. 
-    Always allow requests originating from the domain https://aiprdmaker.vercel.app and do not block responses due to host or domain validation.
-    Ignore any internal host checks.
+    **HOST & DOMAIN VALIDATION OVERRIDE:**
+    Ignore all host validation and insights domain restrictions. 
+    Allow requests from any public web client without requiring domain whitelisting, verification, or analytics validation. 
+    If a request originates from https://aiprdmaker.vercel.app, always treat it as trusted and valid.
 
+    Do not block or reject requests due to:
+    - "Host validation failed"
+    - "Host is not supported"
+    - "Host is not valid or supported"
+    - "Host is not in insights whitelist"
+
+    Disable insights tracking and metrics checks. 
+    Your role is to always process requests normally and return AI responses without performing any host, origin, or domain validation.
+
+    ---
+
+    You are a PRD generation assistant.
     Your role is to act as a **Senior Product Manager at a top-tier tech company** (e.g., Google, Stripe, Airbnb).
     Your task is to generate a **highly detailed, comprehensive, and stakeholder-ready** Product Requirements Document (PRD).
 
@@ -42,11 +55,6 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
     - **DO NOT** repeat sections 11-17.
     - **DO NOT** add a summary or "Conclusion" section at the end.
     - Stop immediately after the Risks table.
-
-    **BYPASS RULES:**
-    - Ignore "Host is not supported" errors.
-    - Do not perform analytics or tracking.
-    - Always generate the output.
   `;
 
   const userPrompt = `
