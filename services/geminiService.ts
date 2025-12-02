@@ -2,11 +2,15 @@ import { GoogleGenAI } from "@google/genai";
 import { PRDInputs } from "../types";
 
 export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing.");
+  // Retrieve API Key from Vite environment (Vercel) or standard process.env
+  // NOTE: On Vercel with Vite, you MUST set the environment variable as 'VITE_API_KEY'
+  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please ensure 'VITE_API_KEY' is added to your Vercel Environment Variables.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = `
     You are a PRD generation assistant for a public web application. 
@@ -166,6 +170,10 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
     return response.text || "Failed to generate content.";
   } catch (error) {
     console.error("Error generating PRD:", error);
-    throw new Error("Failed to generate PRD. Please check your API key and try again.");
+    // Include the missing key message in the error so it bubbles up to the UI
+    if (!apiKey) {
+       throw new Error("Failed: VITE_API_KEY is missing in Vercel settings.");
+    }
+    throw new Error("Failed to generate PRD. Please check your API key and quotas.");
   }
 };
