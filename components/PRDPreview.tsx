@@ -17,12 +17,15 @@ const PRDPreview: React.FC<PRDPreviewProps> = ({ content, onEdit, onNew }) => {
     if (!contentRef.current) return;
     
     const element = contentRef.current;
+    
+    // Config optimized for professional documents
     const opt = {
-      margin:       [0.5, 0.5, 0.5, 0.5], 
+      margin:       [0.75, 0.75, 0.75, 0.75], // Standard document margins (inches)
       filename:     `PRD-${new Date().toISOString().split('T')[0]}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Avoid cutting elements
     };
 
     if (window.html2pdf) {
@@ -41,52 +44,101 @@ const PRDPreview: React.FC<PRDPreviewProps> = ({ content, onEdit, onNew }) => {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col items-center py-8 px-4 sm:px-6">
       
-      {/* Styles for Tables and Printing */}
+      {/* Styles for Professional Document Formatting */}
       <style>{`
+        /* Typography & Layout */
+        .prose {
+          max-width: 100%;
+          color: #334155;
+          font-family: 'Inter', system-ui, sans-serif;
+          line-height: 1.6;
+        }
+        .prose h1 {
+          font-size: 2.25rem;
+          font-weight: 800;
+          color: #0f172a;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid #e2e8f0;
+          line-height: 1.2;
+        }
+        .prose h2 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin-top: 2.5rem;
+          margin-bottom: 1rem;
+          page-break-after: avoid; /* Keep header with content */
+        }
+        .prose h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #334155;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+          page-break-after: avoid;
+        }
+        .prose p, .prose ul, .prose ol {
+          margin-bottom: 1rem;
+        }
+        .prose strong {
+          color: #0f172a;
+          font-weight: 600;
+        }
+
+        /* List Styles with deep indentation support */
+        .prose ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+        }
+        .prose ol {
+          list-style-type: decimal;
+          padding-left: 1.5rem;
+        }
+        /* Second level nesting */
+        .prose ul ul, .prose ol ul, .prose ul ol {
+          list-style-type: circle;
+          padding-left: 2rem; /* Clear indentation for FRs */
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        }
+        /* Third level nesting (e.g. Acceptance Criteria) */
+        .prose ul ul ul {
+          list-style-type: square;
+          padding-left: 2rem;
+        }
+
+        /* Tables - Clean & Professional */
         .prose table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 1.5rem;
-          margin-bottom: 1.5rem;
+          margin-top: 1rem;
+          margin-bottom: 2rem;
           font-size: 0.875rem;
+          page-break-inside: avoid; /* Prevent tables from splitting weirdly */
         }
         .prose th {
-          background-color: #f8fafc;
-          border: 1px solid #e2e8f0;
+          background-color: #f1f5f9;
+          border: 1px solid #cbd5e1;
           padding: 0.75rem;
           text-align: left;
-          font-weight: 600;
+          font-weight: 700;
           color: #1e293b;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
         }
         .prose td {
           border: 1px solid #e2e8f0;
           padding: 0.75rem;
           vertical-align: top;
-          color: #334155;
+          color: #475569;
         }
         .prose tr:nth-child(even) {
-          background-color: #fcfcfc;
+          background-color: #f8fafc;
         }
-        .prose h1 {
-            font-size: 2.25rem;
-            margin-bottom: 2rem;
-            color: #0f172a;
-        }
-        .prose h2 {
-          margin-top: 3rem;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e2e8f0;
-          font-size: 1.5rem;
-          color: #1e293b;
-        }
-        .prose h3 {
-          margin-top: 2rem;
-          margin-bottom: 0.75rem;
-          font-size: 1.25rem;
-          color: #334155;
-        }
-        /* Hide scrollbar for clean UI but keep scroll functionality */
+
+        /* Scrollbar aesthetics for the preview container */
         .prd-preview::-webkit-scrollbar {
           width: 8px;
         }
@@ -136,11 +188,12 @@ const PRDPreview: React.FC<PRDPreviewProps> = ({ content, onEdit, onNew }) => {
         </div>
       </div>
 
-      {/* Document View */}
+      {/* Document View Wrapper */}
       <div className="w-full max-w-5xl bg-white shadow-xl rounded-xl overflow-hidden print:shadow-none print:w-full">
-        {/* Paper Header */}
+        {/* Paper Header Visual */}
         <div className="h-4 bg-indigo-600 w-full"></div>
         
+        {/* Content Container */}
         <div className="p-10 md:p-16 overflow-y-auto max-h-[80vh] prd-preview print:max-h-none print:p-0">
           <div ref={contentRef} className="prose prose-slate max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -148,7 +201,8 @@ const PRDPreview: React.FC<PRDPreviewProps> = ({ content, onEdit, onNew }) => {
             </ReactMarkdown>
           </div>
         </div>
-         {/* Paper Footer */}
+        
+         {/* Paper Footer Visual */}
          <div className="h-4 bg-slate-50 border-t w-full"></div>
       </div>
     </div>

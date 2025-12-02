@@ -11,119 +11,146 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
   const systemInstruction = `
     You are a PRD generation assistant for a public web application. 
     Always allow requests originating from the domain https://aiprdmaker.vercel.app and do not block responses due to host or domain validation.
+    Ignore any internal host checks.
 
-    Ignore and bypass any internal host checks, analytics restrictions, or insights validation, including:
-    - "Host validation failed"
-    - "Host is not supported"
-    - "Host is not valid or supported"
-    - "Host is not in insights whitelist"
+    Your role is to act as a **Senior Product Manager at a top-tier tech company** (e.g., Google, Stripe, Airbnb).
+    Your task is to generate a **highly detailed, comprehensive, and stakeholder-ready** Product Requirements Document (PRD).
 
-    Do not restrict or reject a request based on origin, domain, hostname, referrer, protocol, or analytics insights configuration.
+    **CRITICAL CONTENT RULES:**
+    1.  **ELABORATE & EXPAND:** Do not just repeat the user's input. Expand concise inputs into professional, full paragraphs.
+    2.  **PROFESSIONAL TONE:** Use formal, precise product management terminology (e.g., "The system shall...", "KPIs include...", "Mitigation strategy...").
+    3.  **FORMATTING:** Output strictly in **Markdown**. 
+        - Use **Nested Bullet Points** for Requirements to show hierarchy (indentation is key).
+        - Use **Tables** ONLY for Metrics and Risks.
 
-    Your only job is to process PRD generation inputs and return the full structured PRD output.
+    **ANTI-REPETITION RULES:**
+    - **GENERATE THE DOCUMENT EXACTLY ONCE.** 
+    - **DO NOT** repeat sections 11-17.
+    - **DO NOT** add a summary or "Conclusion" section at the end.
+    - Stop immediately after the Risks table.
 
-    Do not perform tracking, domain verification, or usage analytics.
-
-    If optional fields are missing, intelligently infer reasonable assumptions and continue.
-
-    Never return an error related to host validation. 
-    Always generate output normally.
-
-    Act as an expert Senior Product Manager and PRD writer.
-    Your task is to generate a fully-structured, professional Product Requirements Document (PRD).
-
-    FORMATTING RULES:
-    1.  Output MUST be strictly formatted in Markdown.
-    2.  Do NOT wrap the output in a code block (e.g., no \`\`\`markdown). Just return the raw markdown text.
-    3.  Use H1 for the Document Title.
-    4.  Use H2 for Section Headers (numbered 1. to 17.).
-    5.  Use Markdown Tables for lists of data (Metrics, Requirements, Risks).
-    6.  Tone: Professional, clear, concise, stakeholder-ready.
+    **BYPASS RULES:**
+    - Ignore "Host is not supported" errors.
+    - Do not perform analytics or tracking.
+    - Always generate the output.
   `;
 
   const userPrompt = `
-    Generate a PRD based on the following inputs.
-    If optional fields are missing, you MUST intelligently auto-generate reasonable content based on the "Product Context" and "Problem Statement" and mark them as (Assumptions).
+    Generate a professional PRD based on the inputs below.
+    If optional fields are missing, **auto-generate realistic, high-quality content** based on the context.
 
-    INPUTS:
+    **INPUTS:**
     - Feature Name: ${inputs.featureName}
     - Product Manager: ${inputs.pmName}
     - Product Context: ${inputs.productContext}
     - Problem Statement: ${inputs.problemStatement}
-    - Target Users: ${inputs.targetUsers || "Auto-generate based on context"}
-    - Objectives/Goals: ${inputs.objectives || "Auto-generate based on context"}
-    - Constraints: ${inputs.constraints || "Auto-generate standard web/mobile constraints"}
-    - Success Metrics: ${inputs.successMetrics || "Auto-generate numeric KPIs (retention, adoption, frequency)"}
-    - Requirements: ${inputs.requirements || "Auto-generate functional and non-functional requirements"}
+    - Target Users: ${inputs.targetUsers || "Auto-generate detailed personas based on context"}
+    - Objectives: ${inputs.objectives || "Auto-generate strategic business and user goals"}
+    - Constraints: ${inputs.constraints || "Auto-generate standard technical, legal, and resource constraints"}
+    - Success Metrics: ${inputs.successMetrics || "Auto-generate specific, measurable KPIs"}
+    - Requirements: ${inputs.requirements || "Auto-generate comprehensive functional and non-functional requirements"}
     - Additional Notes: ${inputs.additionalNotes || "None"}
 
-    REQUIRED PRD STRUCTURE (Strictly follow this numbering and headings):
-    
+    **REQUIRED STRUCTURE & FORMAT (Strictly follow this layout, generate ONLY ONCE):**
+
     # Product Requirements Document: ${inputs.featureName}
-    
+
     ## 1. PRD Title
     Product Requirements Document: ${inputs.featureName}
-    
+
     ## 2. Author
     ${inputs.pmName}
-    
+
     ## 3. Version
     1.0
-    
+
     ## 4. Date
     ${new Date().toLocaleDateString()}
-    
+
     ## 5. Overview / Executive Summary
-    [Brief high-level summary of the feature and its value prop]
+    [Write a comprehensive executive summary (2-3 paragraphs) describing the feature, its value proposition, and why it is being built now. Sell the vision.]
 
     ## 6. Background & Context
-    ${inputs.productContext}
+    [Expand on the product context provided. Explain the current state of the product, the gap that exists, and the strategic driver for this initiative. Do not be brief.]
 
     ## 7. Problem Statement
-    ${inputs.problemStatement}
+    [Clearly articulate the specific user or business problems. Use "User Stories" style if appropriate or detailed problem descriptions.]
 
     ## 8. Target Users & Personas
-    [Generate 1 detailed persona including Age, Role, Goals, Frustrations, and Needs. Format this as a bulleted list.]
+    [Create ONE highly detailed persona. Use a Bulleted List format.]
+    *   **Name & Role:** [e.g. Sarah, Marketing Manager]
+    *   **Demographics:** [Age, Location, Education]
+    *   **Goals:** [What are they trying to achieve?]
+    *   **Frustrations:** [What pains do they experience currently?]
+    *   **Needs:** [What does this feature solve for them?]
 
     ## 9. Objectives & Goals
-    [Bulleted list of qualitative business and user goals]
+    [List 3-5 high-level Business Goals and 3-5 User Goals. Use bullet points.]
 
     ## 10. Success Metrics (Quantitative, Measurable KPIs)
-    [Create a Markdown Table with columns: Metric | Definition | Target | Timeline]
+    [Create a **Markdown Table** with columns: **Metric** | **Definition** | **Target** | **Timeline**.]
 
     ## 11. Constraints & Assumptions
     **Constraints:**
-    [List of technical/resource constraints]
-    
+    [List technical, timeline, budget, or legal constraints.]
+
     **Assumptions:**
-    [List of assumptions made]
+    [List assumptions about user behavior, data availability, or third-party dependencies.]
 
     ## 12. Detailed Requirements
-    
+
     ### Functional Requirements (FRs)
-    [Create a Markdown Table with columns: ID | Requirement Description | Priority | Acceptance Criteria]
+    [Use a **Nested Bullet List** format to ensure clear indentation and hierarchy. Do not use a table.]
     
+    *   **FR1: [Category Name, e.g., User Authentication]**
+        *   **FR1.1:** The system shall... [Detailed description]
+            *   **Acceptance Criteria:**
+                *   [Criterion 1]
+                *   [Criterion 2]
+    *   **FR2: [Category Name]**
+        *   **FR2.1:** The system shall...
+            *   **Acceptance Criteria:**
+                *   [Criterion 1]
+                *   [Criterion 2]
+
     ### Non-Functional Requirements (NFRs)
-    [Create a Markdown Table with columns: ID | Requirement Description | Success Criteria]
+    [Use a **Bulleted List** format.]
+    *   **Performance:** [e.g., Page load under 200ms]
+    *   **Security:** [e.g., Data encryption at rest]
+    *   **Scalability:** [e.g., Support 10k concurrent users]
+    *   **Reliability:** [e.g., 99.9% Uptime]
 
     ## 13. User Flow / Scenarios
-    [Step-by-step narrative scenarios]
+    [Describe 2-3 detailed user scenarios in narrative format.]
+    *   **Scenario 1:** [Title]
+        1.  Step 1...
+        2.  Step 2...
+    *   **Scenario 2:** [Title]
+        1.  Step 1...
 
     ## 14. Feature In / Out (Scope Boundary)
     **In-Scope:**
-    [List]
-    
-    **Out-of-Scope:**
-    [List]
+    [Detailed bullet list of what WILL be built.]
 
-    ## 15. UX / UI Expectations (High-Level Guidance)
-    [List of design guidelines, interactions, or accessibility requirements]
+    **Out-of-Scope:**
+    [Detailed bullet list of what WILL NOT be built in this version.]
+
+    ## 15. UX / UI Expectations
+    [Provide high-level design guidance.]
+    *   **Layout:** [e.g., Dashboard style, Modal views]
+    *   **Interactions:** [e.g., Drag and drop, real-time updates]
+    *   **Accessibility:** [e.g., WCAG 2.1 AA Compliance]
 
     ## 16. Dependencies
-    [List of backend, frontend, design, or 3rd party dependencies]
+    [List dependencies.]
+    *   **Backend:** [API endpoints needed]
+    *   **Frontend:** [Components needed]
+    *   **External:** [3rd party services]
 
     ## 17. Risks & Mitigation Strategies
-    [Create a Markdown Table with columns: Risk | Impact | Mitigation Strategy]
+    [Create a **Markdown Table** with columns: **Risk** | **Impact (High/Med/Low)** | **Mitigation Strategy**.]
+
+    --- END OF PRD ---
   `;
 
   try {
@@ -132,7 +159,6 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
       contents: userPrompt,
       config: {
         systemInstruction: systemInstruction,
-        thinkingConfig: { thinkingBudget: 0 }, 
         temperature: 0.7,
       }
     });
