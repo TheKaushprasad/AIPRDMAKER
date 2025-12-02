@@ -2,12 +2,22 @@ import { GoogleGenAI } from "@google/genai";
 import { PRDInputs } from "../types";
 
 export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => {
-  // Retrieve API Key from Vite environment (Vercel) or standard process.env
-  // NOTE: On Vercel with Vite, you MUST set the environment variable as 'VITE_API_KEY'
-  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+  // Debugging: Log (safely) if we found a key
+  const viteKey = (import.meta as any).env?.VITE_API_KEY;
+  const processKey = typeof process !== 'undefined' ? process.env?.API_KEY : undefined;
+  
+  // Priority: VITE_API_KEY (Vercel/Vite) -> API_KEY (Node/Webpack)
+  const apiKey = viteKey || processKey;
 
   if (!apiKey) {
-    throw new Error("API Key is missing. Please ensure 'VITE_API_KEY' is added to your Vercel Environment Variables.");
+    console.error("API Key Check Failed. VITE_API_KEY:", !!viteKey, "process.env.API_KEY:", !!processKey);
+    throw new Error(
+      "API Key is missing. \n\n" +
+      "If you are on Vercel:\n" +
+      "1. Go to Settings > Environment Variables\n" +
+      "2. Add 'VITE_API_KEY' with your Google Gemini key value.\n" +
+      "3. REDEPLOY your project (Variables only apply to new builds)."
+    );
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -167,13 +177,23 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
       }
     });
 
-    return response.text || "Failed to generate content.";
-  } catch (error) {
-    console.error("Error generating PRD:", error);
-    // Include the missing key message in the error so it bubbles up to the UI
-    if (!apiKey) {
-       throw new Error("Failed: VITE_API_KEY is missing in Vercel settings.");
+    if (!response.text) {
+        throw new Error("API returned an empty response. Please try again.");
     }
-    throw new Error("Failed to generate PRD. Please check your API key and quotas.");
+
+    return response.text;
+  } catch (error: any) {
+    console.error("Gemini API Error:", error);
+    
+    // Check for common issues and throw friendly messages
+    if (error.message?.includes("API key not valid")) {
+        throw new Error("Invalid API Key provided. Please check your Vercel settings.");
+    }
+    if (error.message?.includes("403") || error.message?.includes("permission denied")) {
+        throw new Error("Access Denied (403). Ensure your API Key has access to Gemini API.");
+    }
+    
+    // Pass the original message if it's specific enough
+    throw new Error(error.message || "Failed to generate PRD. Please check the console for details.");
   }
 };

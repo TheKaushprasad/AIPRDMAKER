@@ -41,9 +41,11 @@ const App: React.FC = () => {
       const content = await generatePRDContent(data);
       setPrdContent(content);
       setView(AppState.PREVIEW);
-    } catch (error) {
-      alert("Something went wrong generating the PRD. Please check your API key.");
-      console.error(error);
+    } catch (error: any) {
+      console.error("Full error details:", error);
+      // Show the actual error message to the user
+      const errorMessage = error?.message || "An unknown error occurred.";
+      alert(`Failed to generate PRD:\n${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
