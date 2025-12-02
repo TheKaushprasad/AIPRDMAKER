@@ -35,11 +35,10 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
     FORMATTING RULES:
     1.  Output MUST be strictly formatted in Markdown.
     2.  Do NOT wrap the output in a code block (e.g., no \`\`\`markdown). Just return the raw markdown text.
-    3.  Use H1 for the Title.
-    4.  Use H2 for Section Headers.
-    5.  Use bolding for key terms.
-    6.  Use bullet points for lists.
-    7.  Tone: Professional, clear, concise, stakeholder-ready.
+    3.  Use H1 for the Document Title.
+    4.  Use H2 for Section Headers (numbered 1. to 17.).
+    5.  Use Markdown Tables for lists of data (Metrics, Requirements, Risks).
+    6.  Tone: Professional, clear, concise, stakeholder-ready.
   `;
 
   const userPrompt = `
@@ -58,44 +57,73 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
     - Requirements: ${inputs.requirements || "Auto-generate functional and non-functional requirements"}
     - Additional Notes: ${inputs.additionalNotes || "None"}
 
-    REQUIRED PRD STRUCTURE:
+    REQUIRED PRD STRUCTURE (Strictly follow this numbering and headings):
     
     # Product Requirements Document: ${inputs.featureName}
     
-    **Author:** ${inputs.pmName}
-    **Version:** 1.0
-    **Date:** ${new Date().toLocaleDateString()}
+    ## 1. PRD Title
+    Product Requirements Document: ${inputs.featureName}
     
-    ## 1. Overview / Executive Summary
+    ## 2. Author
+    ${inputs.pmName}
+    
+    ## 3. Version
+    1.0
+    
+    ## 4. Date
+    ${new Date().toLocaleDateString()}
+    
+    ## 5. Overview / Executive Summary
     [Brief high-level summary of the feature and its value prop]
 
-    ## 2. Background & Context
-    [Elaborate on the context provided]
+    ## 6. Background & Context
+    ${inputs.productContext}
 
-    ## 3. Target Users / Personas
-    [Generate 1 detailed persona including Age, Role, Goals, Frustrations, and Needs. Format this clearly.]
+    ## 7. Problem Statement
+    ${inputs.problemStatement}
 
-    ## 4. Objectives & Goals
-    [Bulleted list of qualitative goals]
+    ## 8. Target Users & Personas
+    [Generate 1 detailed persona including Age, Role, Goals, Frustrations, and Needs. Format this as a bulleted list.]
 
-    ## 5. Success Metrics (KPIs)
-    [Bulleted list of measurable, numeric KPIs. E.g., Retention %, Adoption %, etc.]
+    ## 9. Objectives & Goals
+    [Bulleted list of qualitative business and user goals]
 
-    ## 6. Requirements
-    ### Functional Requirements
-    [Numbered list of features, e.g., FR-001: User shall...]
+    ## 10. Success Metrics (Quantitative, Measurable KPIs)
+    [Create a Markdown Table with columns: Metric | Definition | Target | Timeline]
+
+    ## 11. Constraints & Assumptions
+    **Constraints:**
+    [List of technical/resource constraints]
     
-    ### Non-Functional Requirements
-    [Numbered list of technical/quality constraints, e.g., NFR-001: Latency shall be < 200ms...]
+    **Assumptions:**
+    [List of assumptions made]
 
-    ## 7. Constraints & Assumptions
-    [Technical, time, or resource constraints]
+    ## 12. Detailed Requirements
+    
+    ### Functional Requirements (FRs)
+    [Create a Markdown Table with columns: ID | Requirement Description | Priority | Acceptance Criteria]
+    
+    ### Non-Functional Requirements (NFRs)
+    [Create a Markdown Table with columns: ID | Requirement Description | Success Criteria]
 
-    ## 8. Out of Scope
-    [What is explicitly not included in this version]
+    ## 13. User Flow / Scenarios
+    [Step-by-step narrative scenarios]
 
-    ## 9. Additional Notes
-    [Any other relevant details]
+    ## 14. Feature In / Out (Scope Boundary)
+    **In-Scope:**
+    [List]
+    
+    **Out-of-Scope:**
+    [List]
+
+    ## 15. UX / UI Expectations (High-Level Guidance)
+    [List of design guidelines, interactions, or accessibility requirements]
+
+    ## 16. Dependencies
+    [List of backend, frontend, design, or 3rd party dependencies]
+
+    ## 17. Risks & Mitigation Strategies
+    [Create a Markdown Table with columns: Risk | Impact | Mitigation Strategy]
   `;
 
   try {
@@ -104,8 +132,8 @@ export const generatePRDContent = async (inputs: PRDInputs): Promise<string> => 
       contents: userPrompt,
       config: {
         systemInstruction: systemInstruction,
-        thinkingConfig: { thinkingBudget: 0 }, // Disable thinking for faster generation on standard text tasks
-        temperature: 0.7, // Slight creativity for auto-generating missing fields
+        thinkingConfig: { thinkingBudget: 0 }, 
+        temperature: 0.7,
       }
     });
 
